@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitCoach AI – Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --orange:#FF6B35;--orange2:#ff8c5a;--orange3:rgba(255,107,53,.12);
+  --dark:#0d1117;--dark2:#161b22;--dark3:#21262d;
+  --card:#1c2128;--text:#e6edf3;--muted:#8b949e;
+  --green:#39d353;--blue:#58a6ff;--purple:#bc8cff;--red:#f85149;
+  --border:rgba(255,255,255,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Sora',sans-serif;background:var(--dark);color:var(--text);min-height:100vh;}
+.app{display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:240px;background:var(--dark2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;flex-shrink:0;}
+.main{flex:1;overflow-y:auto;}
+
+/* Sidebar */
+.sidebar-header{padding:18px 20px;border-bottom:1px solid var(--border);}
+.brand{display:flex;align-items:center;gap:10px;}
+.brand-icon{width:40px;height:40px;border-radius:10px;
+  background:linear-gradient(135deg,#FF6B35,#bc8cff);
+  display:flex;align-items:center;justify-content:center;font-size:18px;}
+.brand-name{font-size:16px;font-weight:800;}
+.brand-sub{font-size:10px;color:var(--orange);font-weight:700;}
+
+.trainer-snap{margin:16px 20px;background:var(--dark3);border-radius:12px;
+  padding:12px;border:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.trainer-av-sm{width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(135deg,#FF6B35,#bc8cff);
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;
+  border:2px solid rgba(255,107,53,.4);}
+.trainer-inf .t-nm{font-size:13px;font-weight:800;}
+.trainer-inf .t-rl{font-size:10px;color:var(--orange);font-weight:700;}
+.online-stat{font-size:10px;color:var(--green);}
+
+.nav{padding:8px 10px;flex:1;}
+.nav-section{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.8px;padding:8px 10px 4px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;
+  border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;
+  color:var(--muted);transition:.15s;margin-bottom:2px;}
+.nav-item:hover{background:var(--dark3);color:var(--text);}
+.nav-item.active{background:var(--orange3);color:var(--orange);}
+.nav-icon{font-size:15px;width:18px;}
+.nav-badge{margin-left:auto;background:var(--orange);color:#fff;
+  border-radius:10px;padding:1px 7px;font-size:10px;font-weight:800;}
+
+.sidebar-footer{padding:14px 16px;border-top:1px solid var(--border);}
+.admin-row{display:flex;align-items:center;gap:10px;}
+.admin-av{width:32px;height:32px;border-radius:50%;background:var(--orange3);
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+  border:1px solid rgba(255,107,53,.3);}
+.admin-name{font-size:13px;font-weight:700;}
+.admin-role{font-size:10px;color:var(--orange);font-weight:700;}
+.logout-btn{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;}
+
+/* Page header */
+.page-header{padding:18px 24px 14px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;background:var(--dark);position:sticky;top:0;z-index:10;}
+.page-title{font-size:18px;font-weight:800;}
+.page-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.header-actions{margin-left:auto;display:flex;gap:8px;}
+
+/* Cards */
+.card{background:var(--card);border-radius:16px;padding:20px;
+  border:1px solid var(--border);margin-bottom:16px;}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.card-title{font-size:15px;font-weight:800;}
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-orange{background:var(--orange3);color:var(--orange);}
+.badge-green{background:rgba(57,211,83,.1);color:var(--green);}
+.badge-blue{background:rgba(88,166,255,.1);color:var(--blue);}
+.badge-red{background:rgba(248,81,73,.1);color:var(--red);}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:20px 24px 0;}
+.stat-card{background:var(--card);border-radius:14px;padding:16px;
+  border:1px solid var(--border);}
+.stat-icon{font-size:22px;margin-bottom:8px;}
+.stat-val{font-size:28px;font-weight:800;}
+.stat-val.orange{color:var(--orange);}
+.stat-val.green{color:var(--green);}
+.stat-val.blue{color:var(--blue);}
+.stat-val.purple{color:var(--purple);}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:3px;font-weight:600;}
+.stat-trend{font-size:11px;margin-top:4px;}
+.stat-trend.up{color:var(--green);}
+.stat-trend.down{color:var(--red);}
+
+/* Tabs */
+.tab-content{display:none;padding:20px 24px;}
+.tab-content.active{display:block;}
+
+/* Users table */
+.users-table{width:100%;border-collapse:collapse;}
+.users-table th{text-align:left;font-size:11px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.5px;padding:10px 12px;
+  border-bottom:1px solid var(--border);}
+.users-table td{padding:12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
+.users-table tr:last-child td{border-bottom:none;}
+.users-table tr:hover td{background:rgba(255,255,255,.02);}
+.user-cell{display:flex;align-items:center;gap:10px;}
+.user-av-sm{width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.user-nm{font-size:13px;font-weight:700;}
+.user-email{font-size:11px;color:var(--muted);}
+.progress-bar{height:6px;background:var(--dark3);border-radius:3px;width:80px;display:inline-block;}
+.progress-fill{height:100%;border-radius:3px;}
+.progress-fill.orange{background:var(--orange);}
+.progress-fill.green{background:var(--green);}
+.progress-fill.blue{background:var(--blue);}
+
+/* Program editor */
+.program-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.exercise-card{background:var(--dark3);border-radius:12px;padding:16px;
+  border:1px solid var(--border);}
+.ex-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.ex-nm{font-size:14px;font-weight:800;}
+.ex-controls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.ex-ctrl{display:flex;flex-direction:column;gap:4px;}
+.ex-ctrl label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;}
+.ex-ctrl input{background:var(--dark);border:1px solid var(--border);border-radius:8px;
+  padding:8px 10px;font-size:14px;font-family:'Sora',sans-serif;font-weight:700;
+  color:var(--text);outline:none;text-align:center;width:100%;}
+.ex-ctrl input:focus{border-color:var(--orange);}
+.add-ex-btn{background:var(--dark3);border:2px dashed var(--border);border-radius:12px;
+  padding:20px;display:flex;align-items:center;justify-content:center;gap:8px;
+  cursor:pointer;font-size:13px;font-weight:700;color:var(--muted);transition:.15s;}
+.add-ex-btn:hover{border-color:var(--orange);color:var(--orange);}
+
+/* Message editor */
+.msg-card{background:var(--dark3);border-radius:12px;padding:16px;
+  border:1px solid var(--border);margin-bottom:10px;}
+.msg-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.msg-type{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;}
+textarea.msg-edit{width:100%;background:var(--dark);border:1px solid var(--border);
+  border-radius:8px;padding:10px 12px;font-family:'Sora',sans-serif;font-size:13px;
+  color:var(--text);resize:vertical;outline:none;min-height:80px;transition:border-color .2s;}
+textarea.msg-edit:focus{border-color:var(--orange);}
+
+/* Charts */
+.chart-bars{display:flex;align-items:flex-end;gap:8px;height:100px;padding-top:10px;}
+.chart-bar{flex:1;border-radius:6px 6px 0 0;position:relative;cursor:pointer;
+  background:var(--orange3);border:1px solid rgba(255,107,53,.2);transition:.2s;}
+.chart-bar:hover{background:rgba(255,107,53,.3);}
+.chart-bar .tip{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);
+  background:var(--card);border:1px solid var(--border);border-radius:6px;
+  padding:3px 7px;font-size:10px;white-space:nowrap;display:none;margin-bottom:4px;}
+.chart-bar:hover .tip{display:block;}
+.chart-labels{display:flex;gap:8px;margin-top:6px;}
+.chart-labels span{flex:1;text-align:center;font-size:9px;color:var(--muted);font-weight:700;}
+
+/* Donut */
+.donut-wrap{display:flex;align-items:center;gap:24px;}
+.donut-legend{display:flex;flex-direction:column;gap:8px;}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:12px;}
+.legend-dot{width:10px;height:10px;border-radius:50%;}
+
+/* Buttons */
+.btn{padding:9px 16px;border-radius:10px;border:none;font-family:'Sora',sans-serif;
+  font-size:13px;font-weight:700;cursor:pointer;transition:.15s;}
+.btn-primary{background:var(--orange);color:#fff;}
+.btn-primary:hover{background:var(--orange2);}
+.btn-ghost{background:var(--dark3);color:var(--text);border:1px solid var(--border);}
+.btn-ghost:hover{border-color:var(--orange);}
+.btn-danger{background:rgba(248,81,73,.15);color:var(--red);border:1px solid rgba(248,81,73,.3);}
+.btn-sm{padding:5px 10px;font-size:11px;border-radius:7px;}
+
+/* Notif */
+.notif{position:fixed;top:20px;right:20px;background:var(--card);border:1px solid var(--green);
+  border-radius:12px;padding:12px 16px;font-size:13px;font-weight:700;color:var(--green);
+  box-shadow:0 8px 24px rgba(0,0,0,.4);transform:translateY(-80px);transition:.3s;z-index:999;}
+.notif.show{transform:translateY(0);}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;
+  display:none;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--card);border-radius:20px;padding:28px;max-width:440px;width:90%;
+  border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,.6);}
+.modal h3{font-size:17px;font-weight:800;margin-bottom:16px;}
+.modal-input{width:100%;background:var(--dark3);border:1px solid var(--border);border-radius:10px;
+  padding:11px 14px;font-family:'Sora',sans-serif;font-size:13px;color:var(--text);
+  outline:none;margin-bottom:12px;}
+.modal-input:focus{border-color:var(--orange);}
+.modal-btns{display:flex;gap:10px;margin-top:4px;}
+</style>
+</head>
+<body>
+<div class="notif" id="notif">Saved!</div>
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3 id="modalTitle">Add New Athlete</h3>
+    <input class="modal-input" placeholder="Full Name" id="mName"/>
+    <input class="modal-input" placeholder="Email address" id="mEmail"/>
+    <select class="modal-input" id="mLevel" style="cursor:pointer;">
+      <option>Beginner</option><option selected>Intermediate</option><option>Advanced</option>
+    </select>
+    <div class="modal-btns">
+      <button class="btn btn-primary" style="flex:1;" onclick="saveUser()">Add Athlete</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">
+        <div class="brand-icon">🏋️‍♀️</div>
+        <div>
+          <div class="brand-name">FitCoach AI</div>
+          <div class="brand-sub">Admin Panel</div>
+        </div>
+      </div>
+    </div>
+    <div class="trainer-snap">
+      <div class="trainer-av-sm" style="overflow:hidden;position:relative;">
+        <img src="ashley.jpg" alt="Ashley" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:50%;" onerror="this.style.display='none'"/>
+        🏋️‍♀️</div>
+      <div class="trainer-inf">
+        <div class="t-nm">Ashley</div>
+        <div class="t-rl">AI Personal Trainer</div>
+        <div class="online-stat">● Online · 248 athletes</div>
+      </div>
+    </div>
+    <div class="nav">
+      <div class="nav-section">Overview</div>
+      <div class="nav-item active" onclick="showTab('dashboard')">
+        <span class="nav-icon">📊</span> Dashboard
+      </div>
+      <div class="nav-section">Management</div>
+      <div class="nav-item" onclick="showTab('users')">
+        <span class="nav-icon">👥</span> Athletes
+        <span class="nav-badge">248</span>
+      </div>
+      <div class="nav-item" onclick="showTab('program')">
+        <span class="nav-icon">💪</span> Edit Program
+      </div>
+      <div class="nav-item" onclick="showTab('messages')">
+        <span class="nav-icon">💬</span> Coach Messages
+      </div>
+      <div class="nav-section">Reports</div>
+      <div class="nav-item" onclick="showTab('stats')">
+        <span class="nav-icon">📈</span> Statistics
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="admin-row">
+        <div class="admin-av">👤</div>
+        <div>
+          <div class="admin-name" id="adminName">Trainer</div>
+          <div class="admin-role">Administrator</div>
+        </div>
+        <button class="logout-btn" onclick="window.location.href='index.html'" title="Logout">←</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="page-header">
+      <div>
+        <div class="page-title" id="pageTitle">Dashboard</div>
+        <div class="page-sub" id="pageSub">Sunday, June 21, 2026 · Welcome back!</div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-ghost" onclick="showTab('program')">✏️ Edit Program</button>
+        <button class="btn btn-primary" onclick="openModal()">+ Add Athlete</button>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-val orange" id="statAthletes">248</div>
+        <div class="stat-lbl">Total Athletes</div>
+        <div class="stat-trend up">↑ +12 this month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🔥</div>
+        <div class="stat-val green">87</div>
+        <div class="stat-lbl">Active Today</div>
+        <div class="stat-trend up">↑ 35% of users</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💬</div>
+        <div class="stat-val blue">1,240</div>
+        <div class="stat-lbl">Coach Chats Today</div>
+        <div class="stat-trend up">↑ 18%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⭐</div>
+        <div class="stat-val purple">4.7</div>
+        <div class="stat-lbl">Avg. Rating</div>
+        <div class="stat-trend up">↑ +0.2 this week</div>
+      </div>
+    </div>
+
+    <!-- ── DASHBOARD TAB ───────────────────────── -->
+    <div class="tab-content active" id="tab-dashboard" style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">
+      <div>
+        <div class="card" style="margin-top:16px;">
+          <div class="card-header">
+            <div class="card-title">📈 Weekly Sessions</div>
+            <span class="badge badge-green">+18% vs last week</span>
+          </div>
+          <div class="chart-bars" id="weekChart"></div>
+          <div class="chart-labels" id="weekLabels"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🏆 Top Athletes</div>
+            <button class="btn btn-ghost btn-sm" onclick="showTab('users')">View All</button>
+          </div>
+          <div id="topAthletes"></div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-top:16px;">
+          <div class="card-header">
+            <div class="card-title">🥧 Workout Types</div>
+            <span class="badge badge-blue">This week</span>
+          </div>
+          <div class="donut-wrap">
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="46" fill="none" stroke="#21262d" stroke-width="20"/>
+              <circle cx="60" cy="60" r="46" fill="none" stroke="#FF6B35" stroke-width="20"
+                stroke-dasharray="87 202" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+              <circle cx="60" cy="60" r="46" fill="none" stroke="#58a6ff" stroke-width="20"
+                stroke-dasharray="58 202" stroke-dashoffset="-87" transform="rotate(-90 60 60)"/>
+              <circle cx="60" cy="60" r="46" fill="none" stroke="#bc8cff" stroke-width="20"
+                stroke-dasharray="40 202" stroke-dashoffset="-145" transform="rotate(-90 60 60)"/>
+              <circle cx="60" cy="60" r="46" fill="none" stroke="#39d353" stroke-width="20"
+                stroke-dasharray="17 202" stroke-dashoffset="-185" transform="rotate(-90 60 60)"/>
+            </svg>
+            <div class="donut-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div><span>Strength <strong style="color:var(--text)">43%</strong></span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div><span>Cardio <strong style="color:var(--text)">29%</strong></span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div><span>HIIT <strong style="color:var(--text)">20%</strong></span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div><span>Flexibility <strong style="color:var(--text)">8%</strong></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📋 Recent Activity</div>
+          </div>
+          <div id="recentActivity"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── USERS TAB ───────────────────────── -->
+    <div class="tab-content" id="tab-users">
+      <div class="card" style="margin-top:0;">
+        <div class="card-header">
+          <div>
+            <div class="card-title">👥 All Athletes</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px;" id="userCount">248 athletes enrolled</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <input style="background:var(--dark3);border:1px solid var(--border);border-radius:8px;
+              padding:8px 12px;font-family:'Sora',sans-serif;font-size:12px;color:var(--text);
+              outline:none;width:200px;" placeholder="🔍 Search athletes..." id="searchInput"
+              oninput="filterUsers(this.value)"/>
+            <button class="btn btn-primary" onclick="openModal()">+ Add</button>
+          </div>
+        </div>
+        <table class="users-table" id="usersTable">
+          <thead>
+            <tr>
+              <th>Athlete</th>
+              <th>Level</th>
+              <th>Sessions</th>
+              <th>Progress</th>
+              <th>Last Active</th>
+              <th>Rating</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usersTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── PROGRAM TAB ───────────────────────── -->
+    <div class="tab-content" id="tab-program">
+      <div class="card" style="margin-top:0;">
+        <div class="card-header">
+          <div>
+            <div class="card-title">📋 Weekly Program</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px;">Edit exercises, sets, reps and weights</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-ghost" onclick="resetProgram()">↺ Reset</button>
+            <button class="btn btn-primary" onclick="saveProgram()">💾 Save Program</button>
+          </div>
+        </div>
+        <div class="program-grid" id="programGrid"></div>
+        <div class="add-ex-btn" style="margin-top:12px;" onclick="addExercise()">
+          <span>➕</span> Add Exercise
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MESSAGES TAB ───────────────────────── -->
+    <div class="tab-content" id="tab-messages">
+      <div class="card" style="margin-top:0;">
+        <div class="card-header">
+          <div>
+            <div class="card-title">💬 Coach AI Messages</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px;">Edit what Ashley says to athletes</div>
+          </div>
+          <button class="btn btn-primary" onclick="saveMsgs()">💾 Save All</button>
+        </div>
+        <div id="msgCards"></div>
+      </div>
+    </div>
+
+    <!-- ── STATS TAB ───────────────────────── -->
+    <div class="tab-content" id="tab-stats" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div class="card" style="margin-top:0;">
+        <div class="card-title" style="margin-bottom:16px;">📊 Monthly Sessions</div>
+        <div class="chart-bars" id="monthChart" style="height:120px;"></div>
+        <div class="chart-labels" id="monthLabels"></div>
+      </div>
+      <div class="card" style="margin-top:0;">
+        <div class="card-title" style="margin-bottom:16px;">🌟 Rating Distribution</div>
+        <div id="ratingDist"></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px;">💪 Top Exercises</div>
+        <div id="topExercises"></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px;">📅 Attendance Heatmap</div>
+        <div id="heatmap" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;"></div>
+        <div style="display:flex;gap:4px;margin-top:6px;align-items:center;font-size:10px;color:var(--muted);">
+          <span>Less</span>
+          <div style="width:12px;height:12px;border-radius:2px;background:var(--dark3)"></div>
+          <div style="width:12px;height:12px;border-radius:2px;background:rgba(255,107,53,.2)"></div>
+          <div style="width:12px;height:12px;border-radius:2px;background:rgba(255,107,53,.5)"></div>
+          <div style="width:12px;height:12px;border-radius:2px;background:var(--orange)"></div>
+          <span>More</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Init
+const adminName = localStorage.getItem('fc_name') || 'Admin';
+document.getElementById('adminName').textContent = adminName;
+
+// Navigation
+const tabs = ['dashboard','users','program','messages','stats'];
+const titles = {dashboard:'Dashboard',users:'Athletes',program:'Edit Program',messages:'Coach Messages',stats:'Statistics'};
+const subs = {
+  dashboard:'Overview of your fitness platform',
+  users:'Manage all enrolled athletes',
+  program:'Customize the workout program',
+  messages:'Edit Ashley\'s responses',
+  stats:'Detailed analytics and reports'
+};
+function showTab(t){
+  tabs.forEach(x=>{
+    const el=document.getElementById('tab-'+x);
+    if(el) el.classList.toggle('active',x===t);
+  });
+  document.querySelectorAll('.nav-item').forEach((el,i)=>{
+    el.classList.toggle('active',tabs[i]===t);
+  });
+  document.getElementById('pageTitle').textContent=titles[t];
+  document.getElementById('pageSub').textContent=subs[t];
+}
+
+// ── DASHBOARD CHARTS ───────────────────────────
+const weekData=[42,56,38,71,65,88,52];
+const weekDays=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+function buildWeekChart(){
+  const max=Math.max(...weekData);
+  const c=document.getElementById('weekChart');
+  const l=document.getElementById('weekLabels');
+  c.innerHTML=weekData.map((v,i)=>`
+    <div class="chart-bar" style="height:${v/max*100}%;background:${i===6?'rgba(255,107,53,.15)':'var(--orange3)'};">
+      <div class="tip">${weekDays[i]}: ${v} sessions</div>
+    </div>`).join('');
+  l.innerHTML=weekDays.map(d=>`<span>${d}</span>`).join('');
+}
+
+// Top athletes
+const topAthletes=[
+  {name:'Alex K.',emoji:'🥇',sessions:28,streak:14,rating:'A+'},
+  {name:'Sarah M.',emoji:'🥈',sessions:24,streak:9,rating:'A'},
+  {name:'David R.',emoji:'🥉',sessions:22,streak:7,rating:'A'},
+];
+function buildTopAthletes(){
+  document.getElementById('topAthletes').innerHTML=topAthletes.map(a=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--dark3);
+      border-radius:10px;margin-bottom:8px;border:1px solid var(--border);">
+      <span style="font-size:22px;">${a.emoji}</span>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:700;">${a.name}</div>
+        <div style="font-size:11px;color:var(--muted);">${a.sessions} sessions · 🔥${a.streak} streak</div>
+      </div>
+      <span style="font-size:16px;font-weight:800;color:var(--green);">${a.rating}</span>
+    </div>`).join('');
+}
+
+// Recent activity
+const recent=[
+  {emoji:'🏋️',text:'Alex K. completed Dumbbell Press 3×10',time:'2 min ago'},
+  {emoji:'💬',text:'Sarah M. asked Ashley about nutrition',time:'8 min ago'},
+  {emoji:'✅',text:'David R. finished Full Body HIIT session',time:'15 min ago'},
+  {emoji:'⭐',text:'Maria L. rated today\'s workout 5 stars',time:'23 min ago'},
+  {emoji:'📅',text:'Tom B. booked a session for Thursday',time:'1h ago'},
+];
+function buildRecentActivity(){
+  document.getElementById('recentActivity').innerHTML=recent.map(r=>`
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;
+      border-bottom:1px solid var(--border);">
+      <span style="font-size:16px;">${r.emoji}</span>
+      <div style="flex:1;font-size:12px;">${r.text}</div>
+      <span style="font-size:10px;color:var(--muted);white-space:nowrap;">${r.time}</span>
+    </div>`).join('');
+}
+
+// ── USERS ───────────────────────────
+let users = [
+  {id:1,name:'Alex Kim',email:'alex@email.com',level:'Advanced',sessions:28,prog:92,lastActive:'Today',rating:'A+',emoji:'👨'},
+  {id:2,name:'Sarah Miller',email:'sarah@email.com',level:'Intermediate',sessions:24,prog:78,lastActive:'Today',rating:'A',emoji:'👩'},
+  {id:3,name:'David Ross',email:'david@email.com',level:'Intermediate',sessions:22,prog:71,lastActive:'Yesterday',rating:'A',emoji:'👨'},
+  {id:4,name:'Maria Lopez',email:'maria@email.com',level:'Beginner',sessions:12,prog:45,lastActive:'2 days ago',rating:'B+',emoji:'👩'},
+  {id:5,name:'Tom Baker',email:'tom@email.com',level:'Advanced',sessions:31,prog:95,lastActive:'Today',rating:'A+',emoji:'👨'},
+  {id:6,name:'Amy Chen',email:'amy@email.com',level:'Beginner',sessions:8,prog:32,lastActive:'3 days ago',rating:'B',emoji:'👩'},
+];
+const levelColors={Advanced:'badge-orange',Intermediate:'badge-blue',Beginner:'badge-green'};
+function buildUsers(list=users){
+  const bar=(p,c)=>`<div class="progress-bar" style="width:80px;"><div class="progress-fill ${c}" style="width:${p}%"></div></div> <span style="font-size:11px;color:var(--muted);">${p}%</span>`;
+  const pColor=p=>p>=80?'orange':p>=60?'blue':'green';
+  document.getElementById('usersTbody').innerHTML=list.map(u=>`
+    <tr>
+      <td><div class="user-cell">
+        <div class="user-av-sm" style="background:${u.level==='Advanced'?'var(--orange3)':u.level==='Intermediate'?'rgba(88,166,255,.1)':'rgba(57,211,83,.1)'};">${u.emoji}</div>
+        <div><div class="user-nm">${u.name}</div><div class="user-email">${u.email}</div></div>
+      </div></td>
+      <td><span class="badge ${levelColors[u.level]}">${u.level}</span></td>
+      <td><strong>${u.sessions}</strong></td>
+      <td>${bar(u.prog,pColor(u.prog))}</td>
+      <td style="color:var(--muted);font-size:12px;">${u.lastActive}</td>
+      <td><strong style="color:var(--green);">${u.rating}</strong></td>
+      <td><div style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" onclick="msgUser('${u.name}')">💬</button>
+        <button class="btn btn-danger btn-sm" onclick="removeUser(${u.id})">✕</button>
+      </div></td>
+    </tr>`).join('');
+  document.getElementById('userCount').textContent=list.length+' athletes enrolled';
+}
+function filterUsers(q){
+  buildUsers(users.filter(u=>u.name.toLowerCase().includes(q.toLowerCase())||u.email.toLowerCase().includes(q.toLowerCase())));
+}
+function msgUser(name){showNotif(`💬 Opening chat with ${name}...`);}
+function removeUser(id){
+  if(!confirm('Remove this athlete?'))return;
+  users=users.filter(u=>u.id!==id);
+  buildUsers();
+  document.getElementById('statAthletes').textContent=users.length;
+  showNotif('Athlete removed.');
+}
+
+// ── MODAL ───────────────────────────
+function openModal(){document.getElementById('modal').classList.add('open');}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+function saveUser(){
+  const name=document.getElementById('mName').value.trim();
+  const email=document.getElementById('mEmail').value.trim();
+  const level=document.getElementById('mLevel').value;
+  if(!name||!email){showNotif('Please fill all fields.');return;}
+  users.push({id:Date.now(),name,email,level,sessions:0,prog:0,lastActive:'Just now',rating:'—',emoji:'👤'});
+  buildUsers();
+  document.getElementById('statAthletes').textContent=users.length;
+  closeModal();
+  document.getElementById('mName').value='';
+  document.getElementById('mEmail').value='';
+  showNotif('✓ Athlete added!');
+}
+
+// ── PROGRAM EDITOR ───────────────────────────
+let program=[
+  {name:'🏋️ Dumbbell Press',sets:3,reps:10,weight:85},
+  {name:'💪 Bicep Curl',sets:3,reps:10,weight:20},
+  {name:'🔽 Tricep Pulldown',sets:3,reps:10,weight:35},
+  {name:'🚶 Incline Walk',sets:1,reps:30,weight:0,unit:'min'},
+];
+function buildProgram(){
+  document.getElementById('programGrid').innerHTML=program.map((ex,i)=>`
+    <div class="exercise-card">
+      <div class="ex-top">
+        <input style="background:none;border:none;font-family:'Sora',sans-serif;font-size:14px;
+          font-weight:800;color:var(--text);outline:none;width:100%;"
+          value="${ex.name}" onchange="program[${i}].name=this.value"/>
+        <button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;margin-left:8px;"
+          onclick="removeExercise(${i})">✕</button>
+      </div>
+      <div class="ex-controls">
+        <div class="ex-ctrl">
+          <label>Sets</label>
+          <input type="number" value="${ex.sets}" min="1" max="10" onchange="program[${i}].sets=+this.value"/>
+        </div>
+        <div class="ex-ctrl">
+          <label>Reps${ex.unit?' ('+ex.unit+')':''}</label>
+          <input type="number" value="${ex.reps}" min="1" max="60" onchange="program[${i}].reps=+this.value"/>
+        </div>
+        <div class="ex-ctrl">
+          <label>Weight (kg)</label>
+          <input type="number" value="${ex.weight}" min="0" onchange="program[${i}].weight=+this.value"/>
+        </div>
+      </div>
+    </div>`).join('');
+}
+function addExercise(){
+  program.push({name:'🆕 New Exercise',sets:3,reps:10,weight:0});
+  buildProgram();
+}
+function removeExercise(i){program.splice(i,1);buildProgram();}
+function saveProgram(){showNotif('✓ Program saved & pushed to all athletes!');}
+function resetProgram(){
+  program=[
+    {name:'🏋️ Dumbbell Press',sets:3,reps:10,weight:85},
+    {name:'💪 Bicep Curl',sets:3,reps:10,weight:20},
+    {name:'🔽 Tricep Pulldown',sets:3,reps:10,weight:35},
+    {name:'🚶 Incline Walk',sets:1,reps:30,weight:0,unit:'min'},
+  ];
+  buildProgram();
+  showNotif('↺ Program reset to default.');
+}
+
+// ── MESSAGES EDITOR ───────────────────────────
+const messages = [
+  {type:'Welcome',key:'welcome',text:"Hey {name}! 💪 I'm Ashley. Ready to crush today's workout? Let's go!"},
+  {type:'Rest Tip',key:'rest',text:"Rest timer done ⏰ — time to get back to it! Remember, the last rep is the one that counts."},
+  {type:'Form Tip',key:'form',text:"Keep your core tight and control the movement. Quality over quantity every single time! 🎯"},
+  {type:'Motivation',key:'motivation',text:"You're doing amazing! 3 sets down — your body is getting stronger with every rep. Keep pushing! 🔥"},
+  {type:'Post-Workout',key:'post',text:"Outstanding session {name}! 🏆 Make sure to hydrate and get in some protein within the next hour."},
+  {type:'Day-Off',key:'dayoff',text:"Rest day today {name} 🌿 — your muscles are rebuilding. Sleep well and I'll see you tomorrow!"},
+];
+function buildMessages(){
+  document.getElementById('msgCards').innerHTML=messages.map((m,i)=>`
+    <div class="msg-card">
+      <div class="msg-card-header">
+        <span class="msg-type">${m.type}</span>
+        <span style="font-size:11px;color:var(--muted);">Use {name} for personalization</span>
+      </div>
+      <textarea class="msg-edit" onchange="messages[${i}].text=this.value">${m.text}</textarea>
+    </div>`).join('');
+}
+function saveMsgs(){showNotif('✓ Coach messages saved!');}
+
+// ── STATS TAB ───────────────────────────
+const monthData=[120,145,138,162,155,178,190,175,200,188,210,198];
+const monthLabels=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function buildMonthChart(){
+  const max=Math.max(...monthData);
+  document.getElementById('monthChart').innerHTML=monthData.map((v,i)=>`
+    <div class="chart-bar" style="height:${v/max*100}%;background:${i===5?'var(--orange)':'var(--orange3)'}">
+      <div class="tip">${monthLabels[i]}: ${v}</div>
+    </div>`).join('');
+  document.getElementById('monthLabels').innerHTML=monthLabels.map(l=>`<span>${l}</span>`).join('');
+}
+function buildRatingDist(){
+  const dist=[{stars:5,pct:48},{stars:4,pct:32},{stars:3,pct:14},{stars:2,pct:4},{stars:1,pct:2}];
+  document.getElementById('ratingDist').innerHTML=dist.map(d=>`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <span style="font-size:12px;width:20px;text-align:right;">${d.stars}⭐</span>
+      <div style="flex:1;height:8px;background:var(--dark3);border-radius:4px;">
+        <div style="width:${d.pct}%;height:100%;background:var(--orange);border-radius:4px;"></div>
+      </div>
+      <span style="font-size:12px;color:var(--muted);width:30px;">${d.pct}%</span>
+    </div>`).join('');
+}
+function buildTopExercises(){
+  const ex=[
+    {name:'Dumbbell Press',count:1420,icon:'🏋️'},
+    {name:'Bicep Curl',count:1380,icon:'💪'},
+    {name:'Tricep Pulldown',count:1290,icon:'🔽'},
+    {name:'Incline Walk',count:1100,icon:'🚶'},
+    {name:'Squats',count:980,icon:'🦵'},
+  ];
+  const max=ex[0].count;
+  document.getElementById('topExercises').innerHTML=ex.map(e=>`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <span>${e.icon}</span>
+      <div style="flex:1;">
+        <div style="font-size:12px;font-weight:700;margin-bottom:3px;">${e.name}</div>
+        <div style="height:6px;background:var(--dark3);border-radius:3px;">
+          <div style="width:${e.count/max*100}%;height:100%;background:var(--orange);border-radius:3px;"></div>
+        </div>
+      </div>
+      <span style="font-size:11px;color:var(--muted);">${e.count.toLocaleString()}</span>
+    </div>`).join('');
+}
+function buildHeatmap(){
+  const hm=document.getElementById('heatmap');
+  const levels=[0,1,2,3,3,2,1,2,3,2,1,0,2,3,3,2,1,2,3,2,1,2,3,2,1,0,2,3];
+  const cols=['transparent','rgba(255,107,53,.15)','rgba(255,107,53,.4)','var(--orange)'];
+  hm.innerHTML=levels.map(l=>`<div style="aspect-ratio:1;border-radius:3px;background:${l?cols[l]:'var(--dark3)'};"></div>`).join('');
+}
+
+// ── NOTIFICATIONS ───────────────────────────
+function showNotif(msg){
+  const n=document.getElementById('notif');
+  n.textContent=msg;n.classList.add('show');
+  setTimeout(()=>n.classList.remove('show'),2500);
+}
+
+// Init all
+buildWeekChart();buildTopAthletes();buildRecentActivity();
+buildUsers();buildProgram();buildMessages();
+buildMonthChart();buildRatingDist();buildTopExercises();buildHeatmap();
+</script>
+</body>
+</html>
